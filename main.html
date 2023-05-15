@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <title>Einstein's Hat</title>
+    <script src="boards/EinsteinTiling.js"> </script>
+
+    <style>
+        canvas { border: 2px solid; margin: 3px; }
+        canvas[data-active=true] { border: 5px solid; margin: 0px; }
+    </style>
+    <div class="center_container">
+        <h1>Conway's game of life on an aperiodic monotile or einstein</h1>
+    </div>
+</head>
+<body>
+    <tr><td rowspan="2">
+        <canvas id="escherView" width="1200" height="800" tabindex="1"></canvas>
+        <div>
+            <span style = "display: inline-flex; flex-direction: column">
+                <label for = "cellsToOverpopulate">Overpopulate</label>
+                <input type = "text" id = "cellsToOverpopulate" value = "4">
+            </span>
+            <span style = "display: inline-flex; flex-direction: column">
+                <label for = "cellsToPopulate">Populate</label>
+                <input type = "text" id = "cellsToPopulate" value = "2">
+            </span>
+            <span style = "display: inline-flex; flex-direction: column">
+                <label for = "cellsToSolitude">Solitude</label>
+                <input type = "text" id = "cellsToSolitude" value = "1">
+            </span>
+            <button id = "run" onclick="run()">Run</button>
+        </div>
+    </td></tr>
+</body>
+</html>
