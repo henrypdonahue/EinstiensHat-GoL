@@ -131,7 +131,7 @@ Flatland.View = function (canvas, unitCells, hyperparameters) {
     this.ctx = canvas.getContext('2d');
     this.setUnitCells(unitCells);
     this.hyperparameters = hyperparameters;
-    
+
 
 };
 
@@ -148,10 +148,11 @@ Flatland.View.prototype.drawFixedShape = function (fixedTiles, i, weight) {
     let n = fixedTiles[i].points.length;
     this.ctx.lineWidth = weight;
     this.ctx.strokeStyle = `black`
+    let colors = ['#046635', '#068847', '#08aa59', '#09cc6b', '#0bee7c']
     if (fixedTiles[i].clicked) {
-        this.ctx.fillStyle = `rgb(25, 111, 61)`;
+        this.ctx.fillStyle = colors[Math.floor(Math.random() * 5)];
     } else {
-        this.ctx.fillStyle = `rgb(131, 145, 146)`;
+        this.ctx.fillStyle = `#efe6dc`;
     }
     let path = new Path2D();
     let start = Flatland.cornerStructure.getSmoothedCornerPoint(fixedTiles, i, 0);
@@ -347,103 +348,120 @@ function initialHats() {
     return tiles;
 }
 
-    function run() {
-        let escherCanvas = window.document.getElementById("escherView");
-        let hyperparameters = {
-            cellsToOverpopulate: document.querySelector("#cellsToOverpopulate").value,
-            cellsToPopulate: document.querySelector("#cellsToPopulate").value,
-            cellsToSolitude: document.querySelector("#cellsToSolitude").value
-        }
-        let escherView = new Flatland.View(escherCanvas, 22, hyperparameters);
+function run(continuous) {
+
+    let escherCanvas = window.document.getElementById("escherView");
+    let hyperparameters = {
+        cellsToOverpopulate: document.querySelector("#cellsToOverpopulate").value,
+        cellsToPopulate: document.querySelector("#cellsToPopulate").value,
+        cellsToSolitude: document.querySelector("#cellsToSolitude").value
+    }
+    let escherView = new Flatland.View(escherCanvas, 22, hyperparameters);
+    let fixedTiles = initialHats();
+    Flatland.cornerStructure.fixed = fixedTiles;
+    let showFlips = false;
+    let showNumCells = 22;
+
+    Flatland.cornerStructure.memorizeCorners(fixedTiles);
+
+    let timeStep = function (game) {
         console.log(escherView.hyperparameters)
-        let fixedTiles = initialHats();
-        Flatland.cornerStructure.fixed = fixedTiles;
-        let showFlips = false;
-        let showNumCells = 22;
+        // clear the canvases before doing anything
+        escherView.clear();
+        escherView.setUnitCells(showNumCells);
 
-        Flatland.cornerStructure.memorizeCorners(fixedTiles);
+        for (let i = 0; i < fixedTiles.length; ++i) {
+            // Compute the points just once, because drawFixed Shape will use them a lot.
+            fixedTiles[i].points = Flatland.getPoints(fixedTiles[i]);
+        }
 
-        let timeStep = function (game) {
-            // clear the canvases before doing anything
-            escherView.clear();
-            escherView.setUnitCells(showNumCells);
-
-            for (let i = 0; i < fixedTiles.length; ++i) {
-                // Compute the points just once, because drawFixed Shape will use them a lot.
-                fixedTiles[i].points = Flatland.getPoints(fixedTiles[i]);
-            }
-
-            if (Object.keys(Flatland.cornerStructure.tiles).length != 0 && game) {
-                let fixedTilesCopy = JSON.parse(JSON.stringify(fixedTiles))
-                for (let i = 0; i < fixedTiles.length; i++) {
-                    let liveNeighbors = 0;
-                    let iNeighbour = Flatland.cornerStructure.tiles[i].neighbors
-                    console.log(iNeighbour.length);
-                    for (let j = 0; j < iNeighbour.length; j++) {
-                        if (fixedTilesCopy[iNeighbour[j]].clicked) {
-                            liveNeighbors++
-                        }
+        if (Object.keys(Flatland.cornerStructure.tiles).length != 0 && game) {
+            let fixedTilesCopy = JSON.parse(JSON.stringify(fixedTiles))
+            for (let i = 0; i < fixedTiles.length; i++) {
+                let liveNeighbors = 0;
+                let iNeighbour = Flatland.cornerStructure.tiles[i].neighbors
+                for (let j = 0; j < iNeighbour.length; j++) {
+                    if (fixedTilesCopy[iNeighbour[j]].clicked) {
+                        liveNeighbors++
                     }
-                    if (fixedTilesCopy[i].clicked) {
-                        //fixedTiles[i].clicked = false;
-                        if (escherView.hyperparameters.cellsToSolitude <= 1 || liveNeighbors >= escherView.hyperparameters.cellsToOverPopulate) {
-                            fixedTiles[i].clicked = false;
-                        }
-                    } else {
-                        if (liveNeighbors == escherView.hyperparameters.cellsToPopulate) {
-                            fixedTiles[i].clicked = true;
-                        }
+                }
+                if (fixedTilesCopy[i].clicked) {
+                    //fixedTiles[i].clicked = false;
+                    if (liveNeighbors <= escherView.hyperparameters.cellsToSolitude || liveNeighbors >= escherView.hyperparameters.cellsToOverpopulate) {
+                        fixedTiles[i].clicked = false;
+                    }
+                } else {
+                    if (liveNeighbors == escherView.hyperparameters.cellsToPopulate) {
+                        fixedTiles[i].clicked = true;
                     }
                 }
             }
-            for (let i = 0; i < fixedTiles.length; ++i) {
-                let weight = (showFlips && fixedTiles[i].flip) ? 3 : 1;
-                escherView.drawFixedShape(fixedTiles, i, weight);
-            }
+        }
+        for (let i = 0; i < fixedTiles.length; ++i) {
+            let weight = (showFlips && fixedTiles[i].flip) ? 3 : 1;
+            escherView.drawFixedShape(fixedTiles, i, weight);
+        }
 
-            for (let i = 0; i < fixedTiles.length; ++i) {
-                if (showFlips && fixedTiles[i].flip){
-                    escherView.drawFixedShape(fixedTiles, i, 3);
-                }
+        for (let i = 0; i < fixedTiles.length; ++i) {
+            if (showFlips && fixedTiles[i].flip){
+                escherView.drawFixedShape(fixedTiles, i, 3);
             }
-        };
-
-        escherCanvas.addEventListener('mousedown', function (e) {
-            let clickPath = new Path2D();
-            console.log(escherView.canvas.getBoundingClientRect())
-            for (let shape of Object.keys(Flatland.cornerStructure.tiles)) {
-                if (this.getContext('2d').isPointInPath(Flatland.cornerStructure.tiles[shape].path, e.x, (e.y - escherView.canvas.getBoundingClientRect().top))) {
-                    let currentTileIndex = Flatland.cornerStructure.tiles[shape].index;
-                    fixedTiles[currentTileIndex].clicked = !fixedTiles[currentTileIndex].clicked;
-                    let currentTileIds = [];
-                    for (let j = 0; j < fixedTiles[currentTileIndex].points.length; j++) {
-                        let cornerId = Flatland.cornerStructure.A[currentTileIndex][j];
-                        currentTileIds.push(cornerId);
-                    }
-
-                }
-            }
-            timeStep();
-        })
-
-        window.document.onkeydown = function (e) {
-            if (e.key == '+') {
-                showNumCells = Math.max(showNumCells - 1, 5);
-                timeStep();
-            } else if (e.key == '-') {
-                showNumCells = Math.min(showNumCells + 1, 50);
-                timeStep();
-            } else if (e.key == 'f') {
-                showFlips = !showFlips;
-            } else if (e.key == 't') {
-                timeStep(true);
-            }
-        };
-        timeStep();
-        Flatland.cornerStructure.memorizeNeighbors(fixedTiles);
+        }
     };
 
+    escherCanvas.addEventListener('mousedown', function (e) {
+        let clickPath = new Path2D();
+        for (let shape of Object.keys(Flatland.cornerStructure.tiles)) {
+            if (this.getContext('2d').isPointInPath(Flatland.cornerStructure.tiles[shape].path, (e.x - escherView.canvas.getBoundingClientRect().left), (e.y - escherView.canvas.getBoundingClientRect().top))) {
+                let currentTileIndex = Flatland.cornerStructure.tiles[shape].index;
+                fixedTiles[currentTileIndex].clicked = !fixedTiles[currentTileIndex].clicked;
+                let currentTileIds = [];
+                for (let j = 0; j < fixedTiles[currentTileIndex].points.length; j++) {
+                    let cornerId = Flatland.cornerStructure.A[currentTileIndex][j];
+                    currentTileIds.push(cornerId);
+                }
 
+            }
+        }
+
+        timeStep();
+    })
+
+    window.document.onkeydown = function (e) {
+        if (e.key == '+') {
+            showNumCells = Math.max(showNumCells - 1, 5);
+            timeStep();
+        } else if (e.key == '-') {
+            showNumCells = Math.min(showNumCells + 1, 50);
+            timeStep();
+        } else if (e.key == 'f') {
+            showFlips = !showFlips;
+        } else if (e.key == 't') {
+            timeStep(true);
+        }
+    };
+    Flatland.timeStep = timeStep;
+    timeStep();
+    Flatland.cornerStructure.memorizeNeighbors(fixedTiles);
+};
+
+let runInterval;
+function start() {
+    if (!runInterval) {
+        runInterval = window.setInterval(function(){
+            Flatland.timeStep(true);
+        }, 500);
+        console.log(document.querySelector("#start span"))
+        document.querySelector("#startText").style.display = "none";
+        document.querySelector("#stopText").style.display = "inline-block";
+
+    } else {
+        window.clearInterval(runInterval);
+        document.querySelector("#startText").style.display = "inline-block";
+        document.querySelector("#stopText").style.display = "none";
+        runInterval = null;
+    }
+}
 window.onload = function () {
     run();
 }

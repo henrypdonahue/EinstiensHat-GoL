@@ -4,33 +4,173 @@
     <meta charset="UTF-8">
     <title>Einstein's Hat</title>
     <script src="boards/EinsteinTiling.js"> </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Signika+Negative:wght@700&family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
 
     <style>
         canvas { border: 2px solid; margin: 3px; }
         canvas[data-active=true] { border: 5px solid; margin: 0px; }
+        h1 {
+            font-family: 'Signika Negative', sans-serif;
+            text-transform: uppercase;
+            font-size: 4rem;
+            margin-bottom: 0;
+        }
+        h2  {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 300;
+            text-transform:none;
+            font-size: 1.5rem;
+            margin-top: 0;
+        }
+        .upper {
+            display: flex;
+            flex-direction: row;
+            padding: 1rem;
+            justify-content: space-between;
+        }
+        .title {
+            padding-right: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 5rem;
+
+        }
+        label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 300;
+
+        }
+        h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+        }
+        input {
+            font-family: monospace;
+            text-align: center;
+            width: 50px;
+            padding: 0.25rem ;
+            margin: 0.25rem 0 0.5rem;
+        }
+        button {
+            margin-top: 1.25rem;
+            position: relative;
+            color: white;
+            width: 5rem;
+            height: 2rem;
+            background-color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .monotile {
+            position: absolute;
+            z-index: 1;
+            width: 100%;
+            height: auto;
+            left: 0;
+            top: 0;
+            fill: #046635;
+        }
+        button span {
+            position: absolute;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            left: 7%;
+            top: 65%;
+            font-family: monospace;
+        }
     </style>
-    <div class="center_container">
-        <h1>Conway's game of life on an aperiodic monotile or einstein</h1>
-    </div>
 </head>
 <body>
+
     <tr><td rowspan="2">
-        <canvas id="escherView" width="1200" height="800" tabindex="1"></canvas>
-        <div>
-            <span style = "display: inline-flex; flex-direction: column">
-                <label for = "cellsToOverpopulate">Overpopulate</label>
-                <input type = "text" id = "cellsToOverpopulate" value = "4">
-            </span>
-            <span style = "display: inline-flex; flex-direction: column">
-                <label for = "cellsToPopulate">Populate</label>
-                <input type = "text" id = "cellsToPopulate" value = "2">
-            </span>
-            <span style = "display: inline-flex; flex-direction: column">
-                <label for = "cellsToSolitude">Solitude</label>
-                <input type = "text" id = "cellsToSolitude" value = "1">
-            </span>
-            <button id = "run" onclick="run()">Run</button>
-        </div>
+        <div class = "upper">
+            <div class = "title">
+                <div>
+                    <h1>Conway's<br> game of life </h1>
+                    <h2>on an aperiodic monotile</h2>
+                </div>
+                <div>
+                    <h3>Controls</h3>
+                    <div style = "display: flex; flex-direction: column; align-items: flex-start">
+                        <label for = "cellsToOverpopulate">Overpopulate</label>
+                        <input type = "text" id = "cellsToOverpopulate" value = "4">
+                    </div>
+                    <div style = "display: flex; flex-direction: column; align-items: flex-start">
+                        <label for = "cellsToPopulate">Populate</label>
+                        <input type = "text" id = "cellsToPopulate" value = "2">
+                    </div>
+                    <div style = "display: flex; flex-direction: column; align-items: flex-start">
+                        <label for = "cellsToSolitude">Solitude</label>
+                        <input type = "text" id = "cellsToSolitude" value = "1">
+                    </div>
+                    <button id = "hyper" onclick="run()">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="board" class = "monotile" 
+                                viewBox="-0.1 -0.1 6.2 4.6">
+                            <!-- 
+                            1.73205081 = sqrt(3); 
+                            0.86602540 = sqrt(3)/2; 
+                            -->
+                            <path d="M 
+                                    0 0 
+                                    l 
+                                        1           0
+                                        0.5         0.86602540
+                                        1.5        -0.86602540
+                                        3           1.73205081
+                                        0           1.73205081
+                                    -1           0
+                                    -0.5         0.86602540
+                                    -1.5        -0.86602540
+                                    -1.5         0.86602540
+                                    -0.5        -0.86602540
+                                        0.5        -0.86602540
+                                    -1.5        -0.86602540
+                                    z" 
+                                    class="monotile">
+                            </path>
+                        </svg>
+                        <span>Run</span>
+                    </button>
+                    <button id = "start" onclick="start(true)">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="board" class = "monotile" 
+                                viewBox="-0.1 -0.1 6.2 4.6">
+                            <!-- 
+                            1.73205081 = sqrt(3); 
+                            0.86602540 = sqrt(3)/2; 
+                            -->
+                            <path d="M 
+                                    0 0 
+                                    l 
+                                        1           0
+                                        0.5         0.86602540
+                                        1.5        -0.86602540
+                                        3           1.73205081
+                                        0           1.73205081
+                                    -1           0
+                                    -0.5         0.86602540
+                                    -1.5        -0.86602540
+                                    -1.5         0.86602540
+                                    -0.5        -0.86602540
+                                        0.5        -0.86602540
+                                    -1.5        -0.86602540
+                                    z" 
+                                    class="monotile">
+                            </path>
+                        </svg>
+                        <span id = "startText">Start</span>
+                        <span id = "stopText" style="display: none">Stop</span>
+
+                    </button>
+
+                </div>
+            </div>
+            <canvas id="escherView" width="1200" height="800" tabindex="1"></canvas>
+        </div>  
+        
     </td></tr>
 </body>
 </html>
